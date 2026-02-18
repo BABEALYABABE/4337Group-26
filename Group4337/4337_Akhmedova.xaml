@@ -1,0 +1,13 @@
+﻿<Window x:Class="Group4337._4337_Akhmedova"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Group4337"
+        mc:Ignorable="d"
+        Title="_4337_Akhmedova" Height="450" Width="800" Background="SkyBlue">
+    <Grid >
+        <TextBlock Foreground="Fuchsia" FontSize="30" Text="Алия" Margin="10,0,0,0"/>
+        <TextBlock Foreground="Fuchsia" FontSize="30" Text="18!" Margin="100,0,0,0"/>
+    </Grid>
+</Window>

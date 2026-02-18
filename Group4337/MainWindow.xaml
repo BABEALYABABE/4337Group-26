@@ -51,7 +51,13 @@
                 </Grid.RowDefinitions>
 
                 <!-- Места для добавления элементов управления -->
-
+                <Button x:Name="Akhmedova_4337" 
+                     Content="Информация об авторе" 
+                     Click="Akhmedova_4337_Click" 
+                     Grid.Row="3"
+                     Background="Fuchsia"
+                     Foreground="SkyBlue"
+                     />
                 <!---->
 
             </Grid>
