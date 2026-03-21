@@ -13,6 +13,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Excel = Microsoft.Office.Interop.Excel;
+using Word = Microsoft.Office.Interop.Word;
+using System.Text.Json;
+using System.IO;
+using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 namespace Group4337
 {
     /// <summary>
@@ -140,6 +144,139 @@ namespace Group4337
 
                 app.Visible = true;
             }
+        }
+        private void BnExportWord_Click(object sender, RoutedEventArgs e)
+        {
+
+            using (ServiceEntities serviceEntities = new ServiceEntities())
+            {
+                var services = serviceEntities.Service.ToList().OrderBy(s => s.Name_service).ToList();
+                var category = services.GroupBy(x => x.Category).ToList();
+
+                var app = new Word.Application();
+                Word.Document document = app.Documents.Add();
+
+                foreach (var categori in category)
+                {
+                    Word.Paragraph paragraph = document.Paragraphs.Add();
+                    Word.Range range = paragraph.Range;
+
+                    range.Text = categori.Key;
+                    paragraph.set_Style("Заголовок 1");
+                    range.InsertParagraphAfter();
+
+                    Word.Paragraph tableParagraph = document.Paragraphs.Add();
+                    Word.Range tableRange = tableParagraph.Range;
+                    Word.Table studentsTable = document.Tables.Add(tableRange, categori.Count() + 1, 5);
+
+                    studentsTable.Borders.InsideLineStyle = Word.WdLineStyle.wdLineStyleSingle;
+                    studentsTable.Borders.OutsideLineStyle = Word.WdLineStyle.wdLineStyleSingle;
+                    studentsTable.Range.Cells.VerticalAlignment = Word.WdCellVerticalAlignment.wdCellAlignVerticalCenter;
+
+                    Word.Range cellRange = studentsTable.Cell(1, 1).Range;
+                    cellRange.Text = "ID";
+                    cellRange = studentsTable.Cell(1, 2).Range;
+                    cellRange.Text = "Название услуги";
+                    cellRange = studentsTable.Cell(1, 3).Range;
+                    cellRange.Text = "Вид услуги";
+                    cellRange = studentsTable.Cell(1, 4).Range;
+                    cellRange.Text = "Стоимость";
+                    cellRange = studentsTable.Cell(1, 5).Range;
+                    cellRange.Text = "Категория";
+                    studentsTable.Rows[1].Range.Bold = 1;
+                    studentsTable.Rows[1].Range.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+
+                    int i = 1;
+                    var sortserv = categori.OrderBy(s => s.Price).ToList();
+                    foreach (var service in sortserv)
+                    {
+                        cellRange = studentsTable.Cell(i + 1, 1).Range;
+                        cellRange.Text = service.ID.ToString();
+                        cellRange.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+
+                        cellRange = studentsTable.Cell(i + 1, 2).Range;
+                        cellRange.Text = service.Name_service;
+                        cellRange.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+
+                        cellRange = studentsTable.Cell(i + 1, 3).Range;
+                        cellRange.Text = service.Type_service;
+                        cellRange.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+
+                        cellRange = studentsTable.Cell(i + 1, 4).Range;
+                        cellRange.Text = service.Price;
+                        cellRange.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+
+                        cellRange = studentsTable.Cell(i + 1, 5).Range;
+                        cellRange.Text = service.Category;
+                        cellRange.ParagraphFormat.Alignment = Word.WdParagraphAlignment.wdAlignParagraphCenter;
+                        i++;
+                    }
+
+                    Word.Paragraph countStudentsParagraph = document.Paragraphs.Add();
+                    Word.Range countStudentsRange = countStudentsParagraph.Range;
+                    countStudentsRange.Text = $"Количество услуг в категории — {categori.Count()}";
+                    countStudentsRange.Font.Color = Word.WdColor.wdColorDarkRed;
+                    countStudentsRange.InsertParagraphAfter();
+
+                    document.Words.Last.InsertBreak(Word.WdBreakType.wdPageBreak);
+                }
+
+                app.Visible = true;
+                document.SaveAs2(@"C:\Users\User\Desktop\ИСРПО\outputFileWord.docx");
+                document.SaveAs2(@"C:\Users\User\Desktop\ИСРПО\outputFilePdf.pdf", Word.WdExportFormat.wdExportFormatPDF);
+            }
+        }
+
+        private async void BnImportJSON_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog()
+            {
+                DefaultExt = "*.json",
+                Filter = "файл JSON (Spisok.json)|*.json",
+                Title = "Выберите файл базы данных"
+            };
+
+            if (!(ofd.ShowDialog() == true))
+                return;
+            using (FileStream fs = new FileStream(ofd.FileName, FileMode.Open))
+            {
+                var servisarr = await JsonSerializer.DeserializeAsync<Service[]>(fs);
+                if(servisarr.Length == 0)
+                {
+                    MessageBox.Show("Пусто.");
+                    return;
+
+                }
+                using (ServiceEntities serviceEntities = new ServiceEntities())
+                {
+                    foreach (var servis in servisarr)
+                    {
+                        int price = int.Parse(servis.Price);
+                        string category = "";
+                        if (price >= 0 && price <= 350)
+                        {
+                            category = "Категория 1";
+                        }
+                        else if (price >= 250 && price <= 800)
+                        {
+                            category = "Категория 2";
+                        }
+                        else if (price > 800)
+                        {
+                            category = "Категория 3";
+                        }
+                        else
+                        {
+                            category = "неправильно.";
+                        }
+                        servis.Category = category;
+                        serviceEntities.Service.Add(servis);
+                    }
+                    serviceEntities.SaveChanges();
+                    MessageBox.Show($"Молодец!{serviceEntities.Service.Count()}");
+                }
+            }
+
         }
     }
 }
