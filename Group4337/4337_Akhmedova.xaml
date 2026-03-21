@@ -7,7 +7,17 @@
         mc:Ignorable="d"
         Title="_4337_Akhmedova" Height="450" Width="800" Background="SkyBlue">
     <Grid >
-        <TextBlock Foreground="Fuchsia" FontSize="30" Text="Алия" Margin="10,0,0,0"/>
-        <TextBlock Foreground="Fuchsia" FontSize="30" Text="18!" Margin="100,0,0,0"/>
+        <TextBlock Foreground="Fuchsia" FontSize="30" Text="Алия" Margin="50,40,0,0"/>
+        <TextBlock Foreground="Fuchsia" FontSize="30" Text="18!" Margin="120,40,0,0"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="11*"/>
+            </Grid.RowDefinitions>
+            <UniformGrid Grid.Row="0" Columns="2">
+                <Button x:Name="BnExport" Background="Fuchsia" FontWeight="Black" FontSize="16px" Foreground="BlueViolet" Click="BnExport_Click">Экспорт в Excel</Button>
+                <Button x:Name="BnImport" Background="Fuchsia" FontWeight="Black" FontSize="16px" Foreground="BlueViolet" Click="BnImport_Click">Импорт данных</Button>
+            </UniformGrid>
+        </Grid>
     </Grid>
 </Window>
